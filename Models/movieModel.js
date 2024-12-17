@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
-const movieSchema = new mongoose.Schema({
+// Movie schema
+const movieSchema1 = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Movie name is required'],
@@ -17,21 +18,23 @@ const movieSchema = new mongoose.Schema({
     }
 });
 
-const Movie = mongoose.model('movie', movieSchema);
+// Movie model
+const Movie = mongoose.model('Movie', movieSchema1);
+
 module.exports = Movie;
 
-
+// // Create test movie
 // const testMovies = new Movie({
-//     name: 'Avengers Endgame',
-//     description: 'A wonder full movie by Marvel',
-//     duration: 180,
-//     rating: 9.8
+//     name: 'Avengers',
+//     description: 'First Avenger movie by Marvel',
+//     duration: 170,
+//     rating: 9.1
 // });
 
 // testMovies.save()
 //     .then((doc) => {
-//         console.log(doc);
+//         console.log('Movie saved successfully:', doc);
 //     })
 //     .catch((err) => {
-//         console.log("Error occured: " + err);
+//         console.log('Error occurred while saving movie:', err.message);
 //     });

@@ -1,116 +1,114 @@
-const fs = require('fs');
 const Movie = require('./../Models/movieModel');
-let movies = JSON.parse(fs.readFileSync('data/movies.json', 'utf-8'));
-
 // Handlers
 
-exports.validateBody = (req, res, next) => {
-    if (!req.body.name || !req.body.releaseYear || !req.body.duration) {
-        return res.status(400).json({
-            status: 'fail',
-            message: 'Missing name, year, or length'
-        });
-    }
-    next();
-};
-exports.getMoviesHandler=(req, res) =>{
-    res.status(200).json({
-        status: 'success',
-        count: movies.length,
-        data: { movies }
-    });
-}
-
-exports.getMovieByIdHandler = (req, res) => {
-    const id = parseInt(req.params.id, 10); // Convert string to number
-    const movie = movies.find(el => el.id === id);
-
-    if (!movie) {
-        return res.status(404).json({
-            status: 'fail',
-            message: `Movie with id ${id} not found`
-        });
-    }
-
-    res.status(200).json({
-        status: 'success',
-        data: { movie }
-    });
-}
-
-exports.createMovieHandler = (req, res) => {
-    const newId = movies.length > 0 ? movies[movies.length - 1].id + 1 : 1;
-    const newMovie = { id: newId, ...req.body };
-    movies.push(newMovie);
-
-    const filePath = path.join(__dirname, '../data/movies.json');
-
-    fs.writeFile(filePath, JSON.stringify(movies), err => {
-        if (err) {
-            return res.status(500).json({
-                status: 'fail',
-                message: 'Error writing to file'
-            });
-        }
-        res.status(201).json({
-            status: 'success',
-            data: { movie: newMovie }
-        });
-    });
-};
-
-exports.updateMovieHandler = (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    const movieIndex = movies.findIndex(el => el.id === id);
-
-    if (movieIndex === -1) {
-        return res.status(404).json({
-            status: 'fail',
-            message: `Movie with id ${id} not found`
-        });
-    }
-
-    Object.assign(movies[movieIndex], req.body);
-
-    fs.writeFile(path.join(__dirname, '../data/movies.json'), JSON.stringify(movies), err => {
-        if (err) {
-            return res.status(500).json({
-                status: 'fail',
-                message: 'Error writing to file'
-            });
-        }
+// exports.validateBody = (req, res, next) => {
+//     if (!req.body.name || !req.body.releaseYear || !req.body.duration) {
+//         return res.status(400).json({
+//             status: 'fail',
+//             message: 'Missing name, year, or length'
+//         });
+//     }
+//     next();
+// };
+exports.getMoviesHandler = async (req, res) => {
+    try {
+        const movies = await Movie.find();
         res.status(200).json({
             status: 'success',
-            data: { movie: movies[movieIndex] }
+            length: movies.length,
+            data: {
+                movies
+            }
         });
-    });
-}
-
-exports.deleteMovieHandler = (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    const movieIndex = movies.findIndex(el => el.id === id);
-
-    if (movieIndex === -1) {
-        return res.status(404).json({
+    } catch (err) {
+        res.status(404).json({
             status: 'fail',
-            message: `Movie with id ${id} not found`
+            message: err.message
         });
     }
 
-    movies.splice(movieIndex, 1);
+}
 
-    fs.writeFile(path.join(__dirname, '../data/movies.json'), JSON.stringify(movies), err => {
-        if (err) {
-            return res.status(500).json({
+exports.getMovieByIdHandler = async (req, res) => {
+    // const movie = await Movie.find({ _id: req.params.id });
+    try {
+        const movie = await Movie.findById(req.params.id);
+        res.status(200).json({
+            status: 'success',
+            data: {
+                movie
+            }
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: 'fail',
+            message: err.message
+        });
+    }
+
+}
+
+exports.createMovieHandler = async (req, res) => {
+    try {
+        const movie = await Movie.create(req.body);
+        res.status(201).json({
+            status: 'success',
+            data: {
+                movie
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err.message
+        });
+    }
+
+};
+
+exports.updateMovieHandler = async (req, res) => {
+    try {
+        const updatedMovie = await Movie.findByIdAndUpdate(
+            req.params.id,       // Extract id from req.params
+            req.body,            // The updated data
+            { new: true, runValidators: true } // Return updated document and validate inputs
+        );
+
+        if (!updatedMovie) {
+            return res.status(404).json({
                 status: 'fail',
-                message: 'Error writing to file'
+                message: 'No movie found with that ID'
             });
         }
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                movie: updatedMovie
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err.message
+        });
+    }
+};
+
+exports.deleteMovieHandler =async (req, res) => {
+    try {
+        const movie = await Movie.findByIdAndDelete(req.params.id);
         res.status(204).json({
             status: 'success',
             data: null
         });
-    });
-}
+    }
+    catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err.message
+        });
+    }
+};
 
 
