@@ -12,7 +12,8 @@ const Movie = require('./../Models/movieModel');
 // };
 exports.getMoviesHandler = async (req, res) => {
     try {
-        console.log(req.query);
+        console.log(req.query); // Log the query parameters for debugging
+
         // M1
         // const movies = await Movie.find(req.query);
 
@@ -28,12 +29,36 @@ exports.getMoviesHandler = async (req, res) => {
         //     }
         // });
 
-        //Advanced Filtering
-        let quesrStr = JSON.stringify(req.query);
-        quesrStr = quesrStr.replace(/\b(gt|gte|lt|lte)\b/g, match => `$${match}`);
-        const queryObj = JSON.parse(quesrStr);
-        console.log(queryObj);
-        const movies = await Movie.find(queryObj);
+        // Advanced Filtering
+        // M1
+        const queryObj = { ...req.query }; // Copy req.query to avoid mutation
+        const excludedFields = ['sort', 'limit', 'page', 'fields']; // Fields to exclude from filtering
+        excludedFields.forEach((field) => delete queryObj[field]); // Remove excluded fields from queryObj
+
+        let queryStr = JSON.stringify(queryObj); // Convert queryObj to a string
+        queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`); // Add MongoDB operators ($)
+        const filteredQueryObj = JSON.parse(queryStr); // Parse back to object
+        let query = Movie.find(filteredQueryObj); // Create initial query
+
+        // M2
+        // const movies = await Movie.find()
+        //     .where('duration').gte(req.query.duration)
+        //     .where('totalRating').gte(req.query.totalRating)
+        //     .where('price').lte(req.query.price);
+
+        // Sorting
+        if (req.query.sort) {
+            const sortBy = req.query.sort.split(',').join(' '); // Convert to space-separated format for MongoDB
+            query = query.sort(sortBy);
+        }
+        else{
+            query = query.sort('-releaseYear');
+        }
+
+        // Execute the query
+        const movies = await query;
+
+        // Respond with success
         res.status(200).json({
             status: 'success',
             length: movies.length,
@@ -43,13 +68,14 @@ exports.getMoviesHandler = async (req, res) => {
         });
 
     } catch (err) {
+        // Catch and respond with error
         res.status(404).json({
             status: 'fail',
             message: err.message
         });
     }
+};
 
-}
 
 exports.getMovieByIdHandler = async (req, res) => {
     // const movie = await Movie.find({ _id: req.params.id });
