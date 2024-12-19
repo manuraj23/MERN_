@@ -72,6 +72,10 @@ exports.getMoviesHandler = async (req, res) => {
         const skip = (page - 1) * limit; // Calculate number of documents to skip
         query = query.skip(skip).limit(limit);
 
+        if(req.query.page){
+            const numMovies = await Movie.countDocuments();
+            if(skip >= numMovies) throw new Error('This page does not exist');
+        }
 
 
         // Execute the query
