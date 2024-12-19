@@ -40,6 +40,8 @@ exports.getMoviesHandler = async (req, res) => {
         const filteredQueryObj = JSON.parse(queryStr); // Parse back to object
         let query = Movie.find(filteredQueryObj); // Create initial query
 
+        // find returns a query object, not an array of documents which is why we can chain methods like sort, limit, etc.
+
         // M2
         // const movies = await Movie.find()
         //     .where('duration').gte(req.query.duration)
@@ -53,6 +55,15 @@ exports.getMoviesHandler = async (req, res) => {
         }
         else{
             query = query.sort('-releaseYear');
+        }
+
+        // Field Limiting
+        if (req.query.fields) {
+            const fields = req.query.fields.split(',').join(' '); // Convert to space-separated format for MongoDB
+            query = query.select(fields);
+        }
+        else{
+            query = query.select('-__v');
         }
 
         // Execute the query
