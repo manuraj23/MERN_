@@ -12,7 +12,28 @@ const Movie = require('./../Models/movieModel');
 // };
 exports.getMoviesHandler = async (req, res) => {
     try {
-        const movies = await Movie.find();
+        console.log(req.query);
+        // M1
+        // const movies = await Movie.find(req.query);
+
+        // M2
+        // const movies = await Movie.find()
+        //     .where('duration').equals(req.query.duration)
+        //     .where('totalRating').equals(req.query.totalRating);
+        // res.status(200).json({
+        //     status: 'success',
+        //     length: movies.length,
+        //     data: {
+        //         movies
+        //     }
+        // });
+
+        //Advanced Filtering
+        let quesrStr = JSON.stringify(req.query);
+        quesrStr = quesrStr.replace(/\b(gt|gte|lt|lte)\b/g, match => `$${match}`);
+        const queryObj = JSON.parse(quesrStr);
+        console.log(queryObj);
+        const movies = await Movie.find(queryObj);
         res.status(200).json({
             status: 'success',
             length: movies.length,
@@ -20,6 +41,7 @@ exports.getMoviesHandler = async (req, res) => {
                 movies
             }
         });
+
     } catch (err) {
         res.status(404).json({
             status: 'fail',
