@@ -1,4 +1,6 @@
 const Movie = require('./../Models/movieModel');
+const {param} = require('./../Models/movieModel');
+const APIFeatures = require('./../Utils/apiFeatures');
 // Handlers
 
 // exports.validateBody = (req, res, next) => {
@@ -19,6 +21,8 @@ exports.getHighestRated = (req, res, next) => {
 };
 exports.getMoviesHandler = async (req, res) => {
     try {
+        const features = new APIFeatures(Movie.find(), req.query);
+        features.filter().sort().limitFields().paginate();
         console.log(req.query); // Log the query parameters for debugging
 
         // M1
