@@ -66,6 +66,14 @@ exports.getMoviesHandler = async (req, res) => {
             query = query.select('-__v');
         }
 
+        // Pagination
+        const page = req.query.page * 1 || 1; // Convert to number, default to 1
+        const limit = req.query.limit * 1 || 10; // Convert to number, default to 100
+        const skip = (page - 1) * limit; // Calculate number of documents to skip
+        query = query.skip(skip).limit(limit);
+
+
+
         // Execute the query
         const movies = await query;
 
