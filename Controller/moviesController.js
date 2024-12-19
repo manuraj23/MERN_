@@ -10,6 +10,13 @@ const Movie = require('./../Models/movieModel');
 //     }
 //     next();
 // };
+
+//Alisasing
+exports.getHighestRated = (req, res, next) => {
+    req.query.limit = '5';
+    req.query.sort = '-totalRating';
+    next();
+};
 exports.getMoviesHandler = async (req, res) => {
     try {
         console.log(req.query); // Log the query parameters for debugging

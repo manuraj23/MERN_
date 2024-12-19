@@ -3,7 +3,8 @@ const movieController = require('../Controller/moviesController'); // Adjust pat
 
 const router = express.Router();
 
-
+router.route('/getHighestRated')
+    .get(movieController.getHighestRated, movieController.getMoviesHandler);
 
 router.route('/')
     .get(movieController.getMoviesHandler)
