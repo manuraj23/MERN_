@@ -4,10 +4,14 @@ class apiFeatures{
         this.queryStr = queryStr;
     }
     filter(){
-        let queryString = JSON.stringify(this.queryStr); // Convert queryObj to a string
+        const queryObj = { ...this.queryStr }; // Copy this.queryStr to avoid mutation
+        const excludedFields = ['sort', 'limit', 'page', 'fields']; // Fields to exclude from filtering
+        excludedFields.forEach((field) => delete queryObj[field]);
+        
+        let queryString = JSON.stringify(queryObj); // Convert queryObj to a string
         queryString = queryString.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`); // Add MongoDB operators ($)
         const filteredQueryObj = JSON.parse(queryString); // Parse back to object
-
+    
         this.query = this.query.find(filteredQueryObj); // Create initial query
         return this;
     }

@@ -6,6 +6,13 @@ const router = express.Router();
 router.route('/getHighestRated')
     .get(movieController.getHighestRated, movieController.getMoviesHandler);
 
+router.route('/movieStats')
+    .get(movieController.getMoviesStats); 
+
+router.route('/getMovieByGenre/:genre')
+.get(movieController.getMovieByGenre);
+
+
 router.route('/')
     .get(movieController.getMoviesHandler)
     .post(movieController.createMovieHandler);
