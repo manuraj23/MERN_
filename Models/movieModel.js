@@ -107,6 +107,16 @@ movieSchema1.post(/^find/, function (docs, next) {
     next();
 });
 
+// Aggregation Middleware
+// Pre aggregate hook
+movieSchema1.pre('aggregate', function (next) {
+    this.pipeline().unshift({ $match: { releaseYear: { $gte: 2014 } } });
+    console.log(this.pipeline());
+    next();
+});
+
+
+
 // Movie model
 const Movie = mongoose.model('Movie', movieSchema1);
 
