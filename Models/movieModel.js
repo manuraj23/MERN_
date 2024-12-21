@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
-const fs= require('fs');
+const fs = require('fs');
 // Movie schema
 const movieSchema1 = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Movie name is required'],
         unique: true,
-        trim : true
+        trim: true
     },
     description: {
         type: String,
@@ -59,23 +59,25 @@ const movieSchema1 = new mongoose.Schema({
     createdBy: {
         type: String
     }
-},{
+}, {
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
-movieSchema1.virtual('durationInHours').get(function() {
+movieSchema1.virtual('durationInHours').get(function () {
     return this.duration / 60;
 });
 
+
+//Documnet Middleware 
 // Pre save hook
-movieSchema1.pre('save', function(next) {
+movieSchema1.pre('save', function (next) {
     this.createdBy = 'Admin';
     console.log(this);
     next();
 });
 
 // Post save hook
-movieSchema1.post('save', function(doc, next) {
+movieSchema1.post('save', function (doc, next) {
     const content = `Movie ${doc.name} created successfully at ${doc.createdAt}\n`;
     fs.writeFileSync('./Log/log.txt', content, { flag: 'a' }, (err) => {
         if (err) {
@@ -83,6 +85,25 @@ movieSchema1.post('save', function(doc, next) {
         }
     });
     console.log(doc);
+    next();
+});
+
+// Query Middleware
+// Pre find hook
+movieSchema1.pre(/^find/, function (next) {
+    this.find({ releaseYear: { $gte: 2014 } });
+    this.start = Date.now();
+    next();
+});
+
+// Post find hook
+movieSchema1.post(/^find/, function (docs, next) {
+    fs.writeFileSync('./Log/log.txt', `Query took ${Date.now() - this.start} milliseconds\n`, { flag: 'a' }, (err) => {
+        if (err) {
+            console.log('Error occurred while writing to file:', err.message);
+        }
+    });
+    console.log(docs);
     next();
 });
 
