@@ -21,8 +21,12 @@ const movieSchema1 = new mongoose.Schema({
     },
     rating: {
         type: Number,
-        min: [1, 'Rating must be above 1.0'],
-        max: [10, 'Rating must be below 10.0']
+        // min: [1, 'Rating must be above 1.0'],
+        // max: [10, 'Rating must be below 10.0']
+        validate:function(val){
+            return val >= 1 && val <=10;
+    },
+    message:'Rating must be between 1 and 10'
     },
     totalRating: {
         type: Number
